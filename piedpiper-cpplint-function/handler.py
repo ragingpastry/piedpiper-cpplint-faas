@@ -1,31 +1,41 @@
 import os
+import tempfile
 import sh
 from io import StringIO
-from .util import build_temp_zipfiles, build_directories, unzip_files
+from .util import unzip_files
 
 
 def handle(request):
-    """handle a request to the function
-    Args:
-        req (str): request body
     """
-
-    zip_files = build_temp_zipfiles(request)
-    temp_directories = build_directories(request)
+    handle a request to the function
+    Args:
+        request (str): request body
+    """
+    zip_file = request.files.getlist('files')[0]
     cpplint_reports = []
-
-    for zip_file, temp_directory in zip(zip_files, temp_directories):
-        unzip_files(zip_file, temp_directory.name)
-        os.chdir(temp_directory.name)
-        report = run_cpplint('.')
-        cpplint_reports.append(report)
-
+    with tempfile.TemporaryDirectory() as tmpdir:
+        unzip_files(zip_file, tmpdir)
+        os.chdir(tmpdir)
+        project_directories = [
+            name
+            for name in os.listdir(".")
+            if os.path.isdir(name)
+        ]
+        for project_directory in project_directories:
+            report = run_cpplint(project_directory)
+            cpplint_reports.append(report)
     return '\n'.join(cpplint_reports)
+
 
 def run_cpplint(directory):
     buf = StringIO()
     try:
-        sh.cpplint("--recursive", directory, _err=buf)
-    except sh.ErrorReturnCode_1 as e:
+        sh.cpplint(
+            '--recursive',
+            f'--repository={directory}',
+            directory,
+            _err=buf
+        )
+    except sh.ErrorReturnCode_1:
         pass
     return buf.getvalue()

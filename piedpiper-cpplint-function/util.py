@@ -1,8 +1,6 @@
 import tempfile
 import zipfile
 
-from .util import unzip_files
-
 
 def unzip_files(zip_file, tmpdir):
     temp_file = tempfile.NamedTemporaryFile()

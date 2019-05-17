@@ -3,7 +3,17 @@ provider:
   name: faas
   gateway: http://127.0.0.1:8080
 functions:
+  piedpiper-cpplint-gateway:
+    lang: python3-flask
+    handler: ./piedpiper-cpplint-gateway
+    image: piedpiper-cpplint-gateway:latest
+    secrets:
+    - storage-access-key
+    - storage-secret-key
   piedpiper-cpplint-function:
     lang: python3-flask
     handler: ./piedpiper-cpplint-function
     image: piedpiper-cpplint-function:latest
+    secrets:
+    - storage-access-key
+    - storage-secret-key

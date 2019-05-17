@@ -1,3 +1,5 @@
 requests
+minio
 cpplint
 sh
+PyYAML
